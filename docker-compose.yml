@@ -5,19 +5,35 @@ services:
       - "80:80"
     depends_on:
       - redis
+    networks:
+      - frontend
+      - backend
+
   result:
     build: ./result
     ports:
       - "8080:80"
+    networks:
+      - frontend
+      - backend
 
   redis:
     image: redis:alpine
     depends_on:
       - worker
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+
   worker:
     build: ./worker
     depends_on:
       - db
+    networks:
+      - frontend
+      - backend
+
   db:
     image: postgres:15-alpine
     restart: always
@@ -26,3 +42,15 @@ services:
       POSTGRES_PASSWORD: postgres
     depends_on:
       - result
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    networks:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  frontend:
+  backend:
